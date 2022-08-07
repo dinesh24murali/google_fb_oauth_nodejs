@@ -1,0 +1,39 @@
+**/\.DS_Store
+*.pem
+dist/
+.serverless
+.webpack
+**/node_modules/
+**/src_images/
+**/dest_images/
+**/play_inspiration_images/
+**/.env
+.git/
+**/.env*
+env/
+
+# testing
+**/coverage
+
+# next.js
+**/.next/
+**/out/
+
+# production
+**/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# dependencies
+**/.pnp
+.pnp.js
