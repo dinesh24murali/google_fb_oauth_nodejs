@@ -1,14 +1,26 @@
 
 import React from 'react';
-
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Oauth from './Oauth';
+import OauthSuccess from './Oauth/OauthSuccess';
 
 function App() {
   return (
     <div >
-      <Oauth />
+      <Routes>
+        <Route path="/" element={<Oauth />} />
+        <Route path="oauth" element={<OauthSuccess />} />
+      </Routes>
     </div>
   );
 }
 
-export default App;
+function AppWrapper() {
+
+
+  return <BrowserRouter>
+    <App />
+  </BrowserRouter>
+}
+
+export default AppWrapper;

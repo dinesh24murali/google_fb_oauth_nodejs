@@ -1,43 +1,81 @@
-
+const { OAuth2Client } = require('google-auth-library')
 const express = require('express')
-const bodyParser = require('body-parser')
 const cors = require('cors')
-const passport = require('passport')
-const session = require('express-session')
-
-const authHandler = require('./utils/authHandler');
-
+const bodyParser = require('body-parser')
 const app = express()
+const { PrismaClient } = require('@prisma/client')
 
 require('dotenv').config();
-const GoogleStrategy = require('passport-google-oauth').Strategy
 
 const port = process.env.PORT;
 const corsOptions = {
     origin: process.env.FRONTEND_BASE_URL,
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
+const prisma = new PrismaClient();
+
+const client = new OAuth2Client(process.env.OAUTH_CLIENT_ID)
 
 /**
  * Middleware Start
  */
 app.use(bodyParser.json());
 app.use(cors(corsOptions));
-app.use(session({
-  secret: "secret",
-  resave: false ,
-  saveUninitialized: true ,
-}))
 
 /**
  * Middleware Ends
  */
- app.use(passport.initialize())
- // init passport on every route call.
- app.use(passport.session())
- // allow passport to use "express-session".
 
- passport.use(new GoogleStrategy (authHandler))
+const setUser = async (req, res, next) => {
+    const user = await prisma.user.findFirst({ where: { id: req.session.userId } })
+    req.user = user
+    next()
+}
+
+
+app.post("/oauth/google", async (req, res) => {
+    try {
+
+        const { token } = req.body;
+        console.log({
+            token,
+        })
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.OAUTH_CLIENT_ID
+        });
+        console.log({
+            ticket,
+        })
+        const { name, email, picture } = ticket.getPayload();
+        const user = await prisma.user.upsert({
+            where: { email: email },
+            update: { name, picture },
+            create: { name, email, picture }
+        })
+        res.status(201)
+        res.json(user);
+    } catch (e) {
+        console.log(e);
+        res.status(500).send({
+            error: true,
+        });
+    }
+})
+
+app.delete("/auth/logout", setUser, async (req, res) => {
+    await req.session.destroy()
+    res.status(200)
+    res.json({
+        message: "Logged out successfully"
+    })
+});
+
+app.get("/me", async (req, res) => {
+    res.status(200)
+    res.json(req.user)
+})
+
 
 app.get('/', (req, res) => {
     res.status(404);
