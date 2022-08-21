@@ -1,15 +1,8 @@
 import React, { useEffect } from 'react';
-// import GoogleLogin from 'react-google-login';
 
 import { baseUrl } from '../constants';
 
 export default function () {
-
-  const handleCredentialResponse = (response) => {
-    const gt = response;
-    console.log("Encoded JWT ID token: " + response.credential);
-    debugger;
-  }
 
   const onScriptReady = () => {
     if (window.google) {
@@ -37,8 +30,8 @@ export default function () {
   }, []);
 
   const onSuccess = async (data) => {
-    const gt = data;
-    debugger
+    if (!data || !data.credential)
+      return;
     const res = await fetch(`${baseUrl}/oauth/google`, {
       method: "POST",
       body: JSON.stringify({
@@ -52,25 +45,8 @@ export default function () {
     debugger
   }
 
-  const onFailure = (error) => {
-    const gt = error;
-    debugger
-  }
-
-  console.log({
-    env: process.env.REACT_APP_GOOGLE_OAUTH_CLIENTID
-  })
-
   return <div className="">
     <h1>Oauth Example</h1>
     <div id="SignInbutton"></div>
-    {/* <GoogleLogin
-      clientId={process.env.REACT_APP_GOOGLE_OAUTH_CLIENTID}
-      buttonText="Login"
-      onSuccess={onSuccess}
-      onFailure={onFailure}
-      cookiePolicy={'single_host_origin'}
-      isSignedIn={true}
-    /> */}
   </div>;
 }
